@@ -7,38 +7,37 @@ use crossterm::event::{self, KeyCode, KeyEvent, Event};
 pub use crate::framerate_capper::fps_capping::FpsCapper;
 
 
-const BOARD_STR: &'static str = r#"
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
+const BOARD_STR: &'static str = r#"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
 "#;
 
 const FPS: u8 = 30;
 const PLAYER_X: usize = 3;
 const PLAYER_JUMP_SPEED: u8 = 8;
-const LINE_LENGTH: usize = 64 + 1;
-const NUMBER_OF_LINES: usize = BOARD_STR.len() / LINE_LENGTH;
+const LINE_LENGTH: usize = 64;
+const NUMBER_OF_LINES: usize = 24;
 const PLAYER_START_Y: usize = NUMBER_OF_LINES / 2;
 
 
@@ -67,57 +66,65 @@ fn calc_player_pos(t: f32, v0: f32, h: i8) -> i8
 }
 
 
-fn set_player_pos(new_y: i8, former_y: i8, board: &mut Vec<char>) -> bool
+fn set_player_pos(new_y: i8, former_y: i8, board: &mut Vec<Vec<char>>) -> bool
 {
     if new_y > NUMBER_OF_LINES as i8 - 1 || new_y < 0 {
         return false;
     }
-    if let Some(changed_char) = board.get_mut(former_y as usize * LINE_LENGTH + PLAYER_X) {
-        *changed_char = ' '
-    }
-    if board.get(new_y as usize * LINE_LENGTH + PLAYER_X).unwrap() == &'#' {
+    board[former_y as usize][PLAYER_X] = ' ';
+    if board[new_y as usize][PLAYER_X] == '#' {
         return false;
     }
-    if let Some(changed_char) = board.get_mut(new_y as usize * LINE_LENGTH + PLAYER_X) {
-        *changed_char = '@'
-    }
+    board[new_y as usize][PLAYER_X] = '@';
     true
 }
 
 
-fn shift_cols(board: &mut Vec<char>)
+fn shift_cols(board: &mut Vec<Vec<char>>)
 {
-    for i in 0..board.len() {
-        if board.get(i).unwrap() == &'#' {
-            board[i] = ' ';
-            if i & LINE_LENGTH > 0 {
-                board[i - 1] = '#';
+    for y in 0..NUMBER_OF_LINES {
+        for x in 0..LINE_LENGTH {
+            if board[y][x] == '#' {
+                board[y][x] = ' ';
+                if x > 0 {
+                    board[y][x - 1] = '#';
+                }
             }
         }
     }
 }
 
 
-fn check_if_col_passed(board: &Vec<char>) -> bool
+fn check_if_col_passed(board: &Vec<Vec<char>>) -> bool
 {
-    board.get(PLAYER_X).unwrap() == &'#' ||
-    board.get(PLAYER_X + LINE_LENGTH * (NUMBER_OF_LINES - 1)).unwrap() == &'#'
+    board[0][PLAYER_X] == '#' ||
+    board[NUMBER_OF_LINES - 1][PLAYER_X] == '#'
 }
 
 
-fn print_board(board: &Vec<char>, score: u16)
+fn print_board(board: &Vec<Vec<char>>, score: u16)
 {
     print!("\x1B[2J\x1B[H");
     io::stdout().flush().unwrap();
     println!("SCORE: {}", score);
-    let board_string: String = board.iter().collect();
-    println!("{}", board_string);
+    println!("----------------------------------------------------------------");
+    for v in board {
+        let row_string: String = v.iter().collect();
+        println!("{}", row_string);
+    }
+    println!("----------------------------------------------------------------")
 }
 
 
 fn main()
 {
-    let mut board: Vec<char> = BOARD_STR.chars().collect();
+    let pre_board: Vec<String> = BOARD_STR.split('\n')
+                                          .map(String::from)
+                                          .collect();
+
+    let mut board: Vec<Vec<char>> = pre_board.iter()
+                                             .map(|s| s.chars().collect())
+                                             .collect();
 
     let mut score: u16 = 0;
     let mut loop_counter: u16 = 0;
@@ -126,9 +133,7 @@ fn main()
     let mut fps_capper: FpsCapper = FpsCapper::new(FPS);
 
     let mut current_y = PLAYER_START_Y;
-    if let Some(changed_char) = board.get_mut(current_y * LINE_LENGTH + PLAYER_X) {
-        *changed_char = '@'
-    }
+    board[current_y][PLAYER_X] = '@';
     let mut last_jump_y = current_y;
 
     crossterm::terminal::enable_raw_mode().expect("Failed to enable raw mode");
