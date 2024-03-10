@@ -3,6 +3,8 @@ use std::cmp::min;
 use std::io::{self, Write};
 use std::time::Duration;
 use crossterm::event::{self, KeyCode, KeyEvent, Event};
+use rand::rngs::ThreadRng;
+use rand::Rng;
 pub use crate::framerate_capper::fps_capping::FpsCapper;
 
 
@@ -33,15 +35,17 @@ const BOARD_STR: &'static str = r#"
 "#;
 
 
-const FPS: u8 = 10;
-const PLAYER_JUMP_SPEED: u8 = 9;
+const FPS: u8 = 60;
+const PLAYER_JUMP_SPEED: u8 = 8;
 const G_FORCE: f32 = 9.81;
-const ANIMATION_SPEED: f32 = 1.0;
+const ANIMATION_SPEED: f32 = 2.5;
 
 const PLAYER_X: usize = 3;
 const LINE_LENGTH: usize = 64;
 const NUMBER_OF_LINES: usize = 24;
 const PLAYER_START_Y: usize = NUMBER_OF_LINES / 2;
+const GAP_SIZE: usize = 6;
+const GAP_BETWEEN_COLS: u16 = 10;
 
 
 fn space_pressed() -> bool
@@ -75,8 +79,10 @@ fn set_player_pos(new_y: i16, former_y: i16, board: &mut Vec<Vec<char>>) -> bool
     board[former_y as usize][PLAYER_X] = ' ';
     if board[new_y as usize][PLAYER_X] == '#' {
         return false;
+        // TODO: check for '#' inbetween to avoid jumping over them
     }
     board[new_y as usize][PLAYER_X] = '@';
+
     true
 }
 
@@ -100,6 +106,19 @@ fn check_if_col_passed(board: &Vec<Vec<char>>) -> bool
 {
     board[0][PLAYER_X] == '#' ||
     board[NUMBER_OF_LINES - 1][PLAYER_X] == '#'
+}
+
+
+fn draw_new_col(board: &mut Vec<Vec<char>>, rng: &mut ThreadRng, gap_size: usize)
+{
+    let random_upper_bound = rng.gen_range(2..=NUMBER_OF_LINES - 3 - gap_size);
+    
+    for y in 0..random_upper_bound {
+        board[y][LINE_LENGTH - 1] = '#';
+    }
+    for y in random_upper_bound + gap_size..NUMBER_OF_LINES {
+        board[y][LINE_LENGTH - 1] = '#';
+    }
 }
 
 
@@ -133,6 +152,7 @@ fn main()
     let mut shift_speed: u8 = 1;
     let mut loops_since_keypress: u16 = 0;
     let mut fps_capper = FpsCapper::new(FPS);
+    let mut rng = rand::thread_rng();
 
     let mut current_y = PLAYER_START_Y;
     board[current_y][PLAYER_X] = '@';
@@ -145,31 +165,45 @@ fn main()
         FpsCapper::cap_fps(&mut fps_capper);
     }
 
+    let mut frame_changed = true;
     let mut running = true;
     while running
     {
         FpsCapper::start_measurement(&mut fps_capper);
 
-        print_board(&board, score);
+        if frame_changed {
+            print_board(&board, score);
+            frame_changed = false;
+        }
         
-        let new_y = calc_player_pos((loops_since_keypress / FPS as u16) as f32 * ANIMATION_SPEED,
+        let new_y = calc_player_pos(loops_since_keypress as f32 / FPS as f32 * ANIMATION_SPEED,
                                         PLAYER_JUMP_SPEED as f32,
                                         last_jump_y as i16);
 
         running = set_player_pos(new_y, current_y as i16, &mut board); 
-        current_y = new_y as usize;
+        if current_y != new_y as usize {
+            current_y = new_y as usize;
+            frame_changed = true;
+        }
         
-        if check_if_col_passed(&board) {
+        if check_if_col_passed(&board) && loop_counter % FPS as u16 == 0 {
             score += 1;
+            frame_changed = true;
         }
         if space_pressed() {
             last_jump_y = current_y;
             loops_since_keypress = 0;
+            frame_changed = true;
         }
-
-        loop_counter %= (FPS / shift_speed) as u16;
+ 
+        loop_counter %= GAP_BETWEEN_COLS * FPS as u16;
         if loop_counter == 0 {
+            draw_new_col(&mut board, &mut rng, GAP_SIZE);
+            frame_changed = true;
+        }
+        if loop_counter % (FPS as f32 / (shift_speed as f32 * ANIMATION_SPEED)) as u16 == 0 {
             shift_cols(&mut board);
+            frame_changed = true;
         }
         if score % min(10, FPS as u16) == 0 && shift_speed < 10 && score != 0 {
             shift_speed += 1
