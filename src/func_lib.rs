@@ -1,6 +1,6 @@
 pub mod func_lib {
 
-    use std::io::{self, Write};
+    use std::io::{self, Write, Read, stdin, stdout};
     use std::time::Duration;
     use crossterm::event::{self, KeyCode, KeyEvent, Event};
     use rand::rngs::ThreadRng;
@@ -134,6 +134,15 @@ pub mod func_lib {
             println!("|{}|", row_string);
         }
         println!("------------------------------------------------------------------")
+    }
+
+
+    pub fn pause()
+    {
+        let mut out = stdout();
+        out.write(b"Press Enter to quit...").unwrap();
+        out.flush().unwrap();
+        stdin().read(&mut [0]).unwrap();
     }
 
 

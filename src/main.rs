@@ -75,8 +75,8 @@ fn main()
             drew = false;
         }
 
-        if score % min(5, FPS as u16) == 0 && shift_speed < 5.0 && score != 0 {
-            shift_speed *= 1.002;
+        if score % min(5, FPS as u16) == 0 && shift_speed < 1.0 && score != 0 {
+            shift_speed += 0.0025;
         }
 
         loops_since_keypress += 1;
@@ -87,4 +87,5 @@ fn main()
 
     println!("FINAL SCORE: {}", score);
     crossterm::terminal::disable_raw_mode().expect("Failed to disable raw mode");
+    pause();
 }
