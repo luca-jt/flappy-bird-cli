@@ -146,9 +146,7 @@ fn main()
         print_board(&board, score);
         
         let new_y = calc_player_pos((loops_since_keypress / FPS as u16) as f32, PLAYER_JUMP_SPEED as f32, last_jump_y as i8);
-        if set_player_pos(new_y, current_y as i8, &mut board) {
-            running = true
-        }
+        running = set_player_pos(new_y, current_y as i8, &mut board); 
         current_y = new_y as usize;
         if check_if_col_passed(&board) {
             score += 1
