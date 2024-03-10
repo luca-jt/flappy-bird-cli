@@ -75,7 +75,7 @@ fn main()
             drew = false;
         }
 
-        if score % min(5, FPS as u16) == 0 && shift_speed < 1.0 && score != 0 {
+        if score % min(5, FPS as u16) == 0 && shift_speed < 2.0 && score != 0 {
             shift_speed += 0.0025;
         }
 
