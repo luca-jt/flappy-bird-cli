@@ -24,7 +24,7 @@ fn main()
     let mut last_jump_y = current_y;
 
     crossterm::terminal::enable_raw_mode().expect("Failed to enable raw mode");
-    print_board(&board, score);
+    print_board(&board, score, shift_speed);
     while !space_pressed() {
         FpsCapper::start_measurement(&mut fps_capper);
         FpsCapper::cap_fps(&mut fps_capper);
@@ -38,7 +38,7 @@ fn main()
         FpsCapper::start_measurement(&mut fps_capper);
 
         if frame_changed {
-            print_board(&board, score);
+            print_board(&board, score, shift_speed);
             frame_changed = false;
         }
         
@@ -70,13 +70,14 @@ fn main()
 
             if check_if_col_passed(&board) {
                 score += 1;
+
+                if score % min(5, FPS as u16) == 0 && shift_speed < 5.0 && score != 0 {
+                    shift_speed += 0.005 * score as f32;
+                }
             }
+
             frame_changed = true;
             drew = false;
-        }
-
-        if score % min(5, FPS as u16) == 0 && shift_speed < 2.0 && score != 0 {
-            shift_speed += 0.0025;
         }
 
         loops_since_keypress += 1;

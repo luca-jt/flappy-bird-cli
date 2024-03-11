@@ -122,12 +122,12 @@ pub mod func_lib {
     }
 
 
-    pub fn print_board(board: &Vec<Vec<char>>, score: u16)
+    pub fn print_board(board: &Vec<Vec<char>>, score: u16, speed: f32)
     {
         print!("\x1B[2J\x1B[H");
         io::stdout().flush().unwrap();
 
-        println!("SCORE: {}", score);
+        println!("SCORE: {:3} | SPEED: {:.3}", score, speed);
         println!("------------------------------------------------------------------");
         for v in board {
             let row_string: String = v.iter().collect();
