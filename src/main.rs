@@ -1,6 +1,8 @@
 pub mod framerate_capper;
 pub mod func_lib;
 use std::cmp::min;
+use crossterm::{cursor, execute};
+use std::io::stdout;
 pub use crate::framerate_capper::fps_capping::FpsCapper;
 pub use crate::func_lib::func_lib::*;
  
@@ -24,6 +26,7 @@ fn main()
     let mut last_jump_y = current_y;
 
     crossterm::terminal::enable_raw_mode().expect("Failed to enable raw mode");
+    execute!(stdout(),cursor::Hide).unwrap(); // hide cursor
     print_board(&board, score, shift_speed);
     print!("\x1B[s"); // save end-of-board cursor position
     while !space_pressed() {
@@ -91,6 +94,7 @@ fn main()
     }
 
     print!("\x1B[u"); // restore cursor position
+    execute!(stdout(), cursor::Show).unwrap(); // reveal cursor
     println!("FINAL SCORE: {}", score);
     crossterm::terminal::disable_raw_mode().expect("Failed to disable raw mode");
     pause();
