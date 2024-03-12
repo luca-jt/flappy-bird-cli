@@ -87,7 +87,7 @@ pub mod func_lib {
     }
 
 
-    pub fn shift_cols(board: &mut Vec<Vec<char>>)
+    pub fn shift_cols(board: &mut Vec<Vec<char>>, changed_chars: &mut Vec<Vec<u16>>)
     {
         for y in 0..NUMBER_OF_LINES {
             for x in 0..LINE_LENGTH {
@@ -95,6 +95,10 @@ pub mod func_lib {
                     board[y][x] = ' ';
                     if x > 0 {
                         board[y][x - 1] = '#';
+                        changed_chars.push(vec![x as u16, y as u16]);
+                    }
+                    if x > 1 {
+                        changed_chars.push(vec![x as u16 - 1, y as u16]);
                     }
                 }
             }
@@ -145,5 +149,44 @@ pub mod func_lib {
         stdin().read(&mut [0]).unwrap();
     }
 
+
+    fn set_cursor_position(row: u16, col: u16)
+    {
+        print!("\x1B[{};{}H", row, col);
+        io::stdout().flush().unwrap();
+    }
+
+
+    fn delete_number_chars(num: usize)
+    {
+        for _ in 0..num
+        {
+            print!("\x08");
+        }
+        io::stdout().flush().unwrap();
+    }
+
+
+    pub fn edit_board(board: &mut Vec<Vec<char>>, score: u16, speed: f32, changed_chars: &mut Vec<Vec<u16>>)
+    {
+        set_cursor_position(1, 11);
+        delete_number_chars(3);
+        print!("{:3}", score);
+        set_cursor_position(1, 26);
+        delete_number_chars(5);
+        print!("{:.3}", speed);
+
+        for pair in changed_chars.clone()
+        {
+            if let Some([x, y, ..]) = <&[u16] as TryInto<&[u16]>>::try_into(pair.as_slice()).ok() {
+                set_cursor_position(y+3, x+2);
+                delete_number_chars(1);
+                print!("{}", board[*y as usize][*x as usize]);
+            }
+        }
+
+        io::stdout().flush().unwrap();
+        changed_chars.clear();
+    }
 
 }

@@ -3,7 +3,7 @@ pub mod func_lib;
 use std::cmp::min;
 pub use crate::framerate_capper::fps_capping::FpsCapper;
 pub use crate::func_lib::func_lib::*;
-
+ 
 
 fn main()
 {
@@ -25,12 +25,14 @@ fn main()
 
     crossterm::terminal::enable_raw_mode().expect("Failed to enable raw mode");
     print_board(&board, score, shift_speed);
+    print!("\x1B[s"); // save end-of-board cursor position
     while !space_pressed() {
         FpsCapper::start_measurement(&mut fps_capper);
         FpsCapper::cap_fps(&mut fps_capper);
     }
 
     let mut frame_changed = true;
+    let mut changed_chars: Vec<Vec<u16>> = vec![vec![PLAYER_X as u16 + 1, current_y as u16]]; // Vec<[x: u16, y: u16]>
     let mut drew = false;
     let mut running = true;
     while running
@@ -38,7 +40,7 @@ fn main()
         FpsCapper::start_measurement(&mut fps_capper);
 
         if frame_changed {
-            print_board(&board, score, shift_speed);
+            edit_board(&mut board, score, shift_speed, &mut changed_chars);
             frame_changed = false;
         }
         
@@ -48,6 +50,8 @@ fn main()
 
         running = set_player_pos(new_y, current_y as i16, &mut board); 
         if current_y != new_y as usize {
+            changed_chars.push(vec![PLAYER_X as u16, current_y as u16]);
+            changed_chars.push(vec![PLAYER_X as u16, new_y as u16]);
             current_y = new_y as usize;
             frame_changed = true;
         }
@@ -65,7 +69,7 @@ fn main()
         }
 
         if loop_counter % (FPS as f32 * SECONDS_BETWEEN_SHIFTS / shift_speed) as u16 == 0 {
-            shift_cols(&mut board);
+            shift_cols(&mut board, &mut changed_chars);
             shift_counter = shift_counter.wrapping_add(1);
 
             if check_if_col_passed(&board) {
@@ -86,6 +90,7 @@ fn main()
         FpsCapper::cap_fps(&mut fps_capper);
     }
 
+    print!("\x1B[u"); // restore cursor position
     println!("FINAL SCORE: {}", score);
     crossterm::terminal::disable_raw_mode().expect("Failed to disable raw mode");
     pause();
