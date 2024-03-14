@@ -7,33 +7,6 @@ pub mod func_lib {
     use rand::Rng;
 
 
-    pub const BOARD_STR: &'static str = r#"                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-"#;
-
-
     pub const FPS: u8 = 60;
     pub const PLAYER_JUMP_SPEED: u8 = 7;
     pub const G_FORCE: f32 = 9.81;

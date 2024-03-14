@@ -9,10 +9,8 @@ pub use crate::func_lib::func_lib::*;
 
 fn main()
 {
-    let mut pre_board: Vec<String> = BOARD_STR.split('\n').map(String::from).collect();
-    let _ = pre_board.pop().unwrap();
-    let mut board: Vec<Vec<char>> = pre_board.iter().map(|s| s.chars().collect()).collect();
-
+    let mut board: Vec<Vec<char>> = vec![vec![' '; LINE_LENGTH]; NUMBER_OF_LINES];
+    
     let mut score: u16 = 0;
     let mut loop_counter: u16 = 0;
     let mut shift_counter: u16 = 0;
