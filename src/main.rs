@@ -27,7 +27,8 @@ fn main()
     execute!(stdout(),cursor::Hide).unwrap(); // hide cursor
     print_board(&board, score, shift_speed);
     print!("\x1B[s"); // save end-of-board cursor position
-    while !space_pressed() {
+    while !space_pressed()
+    {
         FpsCapper::start_measurement(&mut fps_capper);
         FpsCapper::cap_fps(&mut fps_capper);
     }
@@ -40,33 +41,10 @@ fn main()
     {
         FpsCapper::start_measurement(&mut fps_capper);
 
-        if frame_changed {
+        if frame_changed
+        {
             edit_board(&mut board, score, shift_speed, &mut changed_chars);
             frame_changed = false;
-        }
-        
-        let new_y = calc_player_pos(loops_since_keypress as f32 / FPS as f32 * ANIMATION_SPEED,
-                                        PLAYER_JUMP_SPEED as f32,
-                                        last_jump_y as i16);
-
-        running = set_player_pos(new_y, current_y as i16, &mut board); 
-        if current_y != new_y as usize {
-            changed_chars.push(vec![PLAYER_X as u16, current_y as u16]);
-            changed_chars.push(vec![PLAYER_X as u16, new_y as u16]);
-            current_y = new_y as usize;
-            frame_changed = true;
-        }
-        
-        if space_pressed() {
-            last_jump_y = current_y;
-            loops_since_keypress = 0;
-            frame_changed = true;
-        }
- 
-        if shift_counter % PIXELS_BETWEEN_COLS == 0 && !drew {
-            draw_new_col(&mut board, &mut rng, GAP_SIZE);
-            frame_changed = true;
-            drew = true;
         }
 
         if loop_counter % (FPS as f32 * SECONDS_BETWEEN_SHIFTS / shift_speed) as u16 == 0 {
@@ -83,6 +61,33 @@ fn main()
 
             frame_changed = true;
             drew = false;
+        }
+        
+        let new_y = calc_player_pos(loops_since_keypress as f32 / FPS as f32 * ANIMATION_SPEED,
+                                        PLAYER_JUMP_SPEED as f32,
+                                        last_jump_y as i16);
+
+        running = set_player_pos(new_y, current_y as i16, &mut board); 
+        if current_y != new_y as usize
+        {
+            changed_chars.push(vec![PLAYER_X as u16, current_y as u16]);
+            changed_chars.push(vec![PLAYER_X as u16, new_y as u16]);
+            current_y = new_y as usize;
+            frame_changed = true;
+        }
+        
+        if space_pressed()
+        {
+            last_jump_y = current_y;
+            loops_since_keypress = 0;
+            frame_changed = true;
+        }
+ 
+        if shift_counter % PIXELS_BETWEEN_COLS == 0 && !drew
+        {
+            draw_new_col(&mut board, &mut rng, GAP_SIZE);
+            frame_changed = true;
+            drew = true;
         }
 
         loops_since_keypress += 1;

@@ -1,5 +1,5 @@
-pub mod func_lib {
-
+pub mod func_lib
+{
     use std::io::{self, Write, Read, stdin, stdout};
     use std::time::Duration;
     use crossterm::event::{self, KeyCode, KeyEvent, Event};
@@ -25,9 +25,12 @@ pub mod func_lib {
     {
         loop
         {
-            if event::poll(Duration::from_millis(10)).unwrap() {
-                if let Event::Key(KeyEvent { code, .. }) = event::read().unwrap() {
-                    if code == KeyCode::Char(' ').into() {
+            if event::poll(Duration::from_millis(10)).unwrap()
+            {
+                if let Event::Key(KeyEvent { code, .. }) = event::read().unwrap()
+                {
+                    if code == KeyCode::Char(' ').into()
+                    {
                         return true;
                     }
                 }
@@ -46,11 +49,13 @@ pub mod func_lib {
 
     pub fn set_player_pos(new_y: i16, former_y: i16, board: &mut Vec<Vec<char>>) -> bool
     {
-        if new_y > NUMBER_OF_LINES as i16 - 1 || new_y < 0 {
+        if new_y > NUMBER_OF_LINES as i16 - 1 || new_y < 0
+        {
             return false;
         }
         board[former_y as usize][PLAYER_X] = ' ';
-        if board[new_y as usize][PLAYER_X] == '#' {
+        if board[new_y as usize][PLAYER_X] == '#'
+        {
             return false;
             // TODO: check for '#' inbetween to avoid jumping over them
         }
@@ -62,15 +67,20 @@ pub mod func_lib {
 
     pub fn shift_cols(board: &mut Vec<Vec<char>>, changed_chars: &mut Vec<Vec<u16>>)
     {
-        for y in 0..NUMBER_OF_LINES {
-            for x in 0..LINE_LENGTH {
-                if board[y][x] == '#' {
+        for y in 0..NUMBER_OF_LINES
+        {
+            for x in 0..LINE_LENGTH
+            {
+                if board[y][x] == '#'
+                {
                     board[y][x] = ' ';
-                    if x > 0 {
+                    if x > 0
+                    {
                         board[y][x - 1] = '#';
                         changed_chars.push(vec![x as u16, y as u16]);
                     }
-                    if x > 1 {
+                    if x > 1
+                    {
                         changed_chars.push(vec![x as u16 - 1, y as u16]);
                     }
                 }
@@ -90,10 +100,12 @@ pub mod func_lib {
     {
         let random_upper_bound = rng.gen_range(2..=NUMBER_OF_LINES - 2 - gap_size);
         
-        for y in 0..random_upper_bound {
+        for y in 0..random_upper_bound
+        {
             board[y][LINE_LENGTH - 1] = '#';
         }
-        for y in random_upper_bound + gap_size..NUMBER_OF_LINES {
+        for y in random_upper_bound + gap_size..NUMBER_OF_LINES
+        {
             board[y][LINE_LENGTH - 1] = '#';
         }
     }
@@ -106,7 +118,8 @@ pub mod func_lib {
 
         println!("SCORE: {:3} | SPEED: {:.3}", score, speed);
         println!("------------------------------------------------------------------");
-        for v in board {
+        for v in board
+        {
             let row_string: String = v.iter().collect();
             println!("|{}|", row_string);
         }
@@ -151,7 +164,8 @@ pub mod func_lib {
 
         for pair in changed_chars.clone()
         {
-            if let Some([x, y, ..]) = <&[u16] as TryInto<&[u16]>>::try_into(pair.as_slice()).ok() {
+            if let Some([x, y, ..]) = <&[u16] as TryInto<&[u16]>>::try_into(pair.as_slice()).ok()
+            {
                 set_cursor_position(y+3, x+2);
                 delete_number_chars(1);
                 print!("{}", board[*y as usize][*x as usize]);
@@ -161,5 +175,4 @@ pub mod func_lib {
         io::stdout().flush().unwrap();
         changed_chars.clear();
     }
-
 }

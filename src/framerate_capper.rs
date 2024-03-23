@@ -28,7 +28,8 @@ pub mod fps_capping
         pub fn cap_fps(fps_capper: &mut FpsCapper)
         {
             let measured_time = fps_capper.start_time.unwrap().elapsed();
-            if measured_time < fps_capper.frame_time {
+            if measured_time < fps_capper.frame_time
+            {
                 std::thread::sleep(fps_capper.frame_time - measured_time);
             }
         }
