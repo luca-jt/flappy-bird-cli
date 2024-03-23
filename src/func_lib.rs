@@ -57,7 +57,6 @@ pub mod func_lib
         if board[new_y as usize][PLAYER_X] == '#'
         {
             return false;
-            // TODO: check for '#' inbetween to avoid jumping over them
         }
         board[new_y as usize][PLAYER_X] = '@';
 
